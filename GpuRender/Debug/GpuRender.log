@@ -1,0 +1,13 @@
+﻿Build started 2017/6/1 11:41:53.
+     1>Project "E:\GpuRender\GpuRender\GpuRender.vcxproj" on node 2 (Build target(s)).
+     1>Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"E:\GpuRender\Debug\GpuRender.exe" /INCREMENTAL /NOLOGO /LIBPATH:"C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Lib\x86" /LIBPATH:E:\LearnWorkPlace\GpuRender\GpuRender\lib /LIBPATH:D:\OPencv\opencv\build\x86\vc12\lib /LIBPATH:"C:\Program Files (x86)\Visual Leak Detector\lib\Win32" opencv_calib3d2410d.lib opencv_contrib2410d.lib opencv_core2410d.lib opencv_features2d2410d.lib opencv_flann2410d.lib opencv_gpu2410d.lib opencv_highgui2410d.lib opencv_imgproc2410d.lib opencv_legacy2410d.lib opencv_ml2410d.lib opencv_nonfree2410d.lib opencv_objdetect2410d.lib opencv_ocl2410d.lib opencv_photo2410d.lib opencv_stitching2410d.lib opencv_superres2410d.lib opencv_ts2410d.lib opencv_video2410d.lib opencv_videostab2410d.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"E:\GpuRender\Debug\GpuRender.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"E:\GpuRender\Debug\GpuRender.lib" /MACHINE:X86 Debug\CommonUtil.obj
+         Debug\D3DEffect.obj
+         Debug\D3DRender.obj
+         Debug\main.obj
+         GpuRender.vcxproj -> E:\GpuRender\Debug\GpuRender.exe
+     1>Done Building Project "E:\GpuRender\GpuRender\GpuRender.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:00.27

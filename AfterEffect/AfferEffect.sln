@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AfferEffect", "AfferEffect.vcproj", "{BD179CF2-4BEB-3AB2-9049-1340A1E5E4EB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BD179CF2-4BEB-3AB2-9049-1340A1E5E4EB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{BD179CF2-4BEB-3AB2-9049-1340A1E5E4EB}.Debug|Win32.Build.0 = Debug|Win32
+		{BD179CF2-4BEB-3AB2-9049-1340A1E5E4EB}.Release|Win32.ActiveCfg = Release|Win32
+		{BD179CF2-4BEB-3AB2-9049-1340A1E5E4EB}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,244 @@
+
+texture Texture0;
+texture Texture1;
+texture Texture2;
+
+sampler2D sourceSampler0 =
+sampler_state
+{
+	Texture = <Texture0>;
+	AddressU = Wrap;
+	AddressV = Wrap;
+	MinFilter = Point;
+	MagFilter = Linear;
+	MipFilter = Linear;
+};
+
+sampler2D sourceSampler1 =
+sampler_state
+{
+	Texture = <Texture1>;
+	AddressU = Wrap;
+	AddressV = Wrap;
+	MinFilter = Point;
+	MagFilter = Linear;
+	MipFilter = Linear;
+};
+
+sampler2D sourceSampler2 =
+	sampler_state
+{
+	Texture = <Texture2>;
+	AddressU = Wrap;
+	AddressV = Wrap;
+	MinFilter = Point;
+	MagFilter = Linear;
+	MipFilter = Linear;
+};
+		
+struct VS_INPUT
+{
+	float4 pos : POSITION;
+	float2 uv  : TEXCOORD0;
+};
+
+struct VS_OUTPUT
+{
+	float4 pos : POSITION;
+	float2 uv  : TEXCOORD0;
+};
+
+struct PS_MTR_OUTPUT
+{
+	float4 color0 : COLOR0;
+	float4 color1 : COLOR1;
+};
+
+VS_OUTPUT vs_quad( VS_INPUT vert )
+{
+	VS_OUTPUT vsout = (VS_OUTPUT)0;
+	vsout.pos = vert.pos;
+	vsout.uv = vert.uv;
+	return vsout;
+}
+
+float width;
+float height;
+float step;
+float radius;
+float eps;
+float softSkin;
+float sharpness;
+float whiteness;
+
+PS_MTR_OUTPUT ps_beauty0( float2 texCoord  : TEXCOORD0 )
+{
+	PS_MTR_OUTPUT psout = (PS_MTR_OUTPUT)0;
+	float uBoxHeight = radius / height;
+	float uYStep = step / height;
+	float4 sum = float4(0.0, 0.0, 0.0, 0.0);
+	float4 sumII = float4(0.0, 0.0, 0.0, 0.0);
+	float halfH = uBoxHeight / 2.0;
+	int num = 0;
+	for (float j = -halfH; j < halfH; j += uYStep)
+	{
+		float4 pixel = tex2Dgrad(sourceSampler0, texCoord + float2(0, j), 1 / width, 1 / height);
+
+		pixel.a = 1.0;
+		float skinVal = 0.0;
+		float cb = dot(float4(-37.74, -74.205, 111.945, 128.0), pixel);
+		float cr = dot(float4(111.945, -93.84, -18.105, 128.0), pixel);
+		float maxSkinVal = 110.0;
+		float skinValueCb = (maxSkinVal - abs(cb - 102.0)) / maxSkinVal;
+		float skinValueCr = (maxSkinVal - abs(cr - 153.0)) / maxSkinVal;
+		pixel.a = pow((skinValueCb + skinValueCr) * 0.5, 2.0);
+
+		sum += pixel;
+		sumII += pixel * pixel;
+		num ++;
+	}
+
+	psout.color0 = sum / float(num);
+	psout.color1 = sumII / float(num);
+	return psout;
+}
+
+float4 ps_beauty1( float2 texCoord  : TEXCOORD0 ) : COLOR0
+{
+	float uBoxWidth = radius / width;
+	float uXStep  = step / width;
+	float4 sum = float4(0.0, 0.0, 0.0, 0.0);
+	float4 sumII = float4(0.0, 0.0, 0.0, 0.0);
+	float halfW = uBoxWidth / 2.0;
+	int num = 0;
+	for (float i = -halfW; i < halfW; i += uXStep)
+	{
+		float4 pixel = tex2Dgrad(sourceSampler0, texCoord + float2(i, 0), 1/width, 1/height);
+		float4 pixel2 = tex2Dgrad(sourceSampler1, texCoord + float2(i, 0), 1/width, 1/height);
+		sum += pixel;
+		sumII += pixel2;
+		num ++;
+	}
+
+	float4 oral = tex2D(sourceSampler2, texCoord);
+	float4 mean_I = sum / float(num);
+	float3 mean_II = sumII / float(num);
+	float3 var_I = mean_II - mean_I.rgb * mean_I.rgb;
+	float3 uA = var_I / (var_I + eps);
+	float3 uB = mean_I.rgb - uA * mean_I.rgb;
+	float3 res = uA * oral.rgb + uB;
+	return float4(res, mean_I.a);
+}
+
+float4 ps_beauty2( float2 texCoord  : TEXCOORD0 ) : COLOR0
+{
+	float4 blured = tex2D(sourceSampler0, texCoord);
+	float4 oral = tex2D(sourceSampler1, texCoord);
+	float4 curve = log(oral * (softSkin - 1.0) + 1.0) / log(softSkin);
+
+	float G = oral.g;
+	float G1 = 1.0 - blured.g;
+	G1 = (min(1.0, max(0.0, ((G)+2.0*(G1)-1.0))));
+	float G2 = lerp(G, G1, 0.5);
+
+	G2 = ((G2) <= 0.5 ? (pow(G2, 2.0) * 2.0) : (1.0 - pow((1.0 - G2), 2.0) * 2.0));
+	G2 = ((G2) <= 0.5 ? (pow(G2, 2.0) * 2.0) : (1.0 - pow((1.0 - G2), 2.0) * 2.0));
+	G2 = ((G2) <= 0.5 ? (pow(G2, 2.0) * 2.0) : (1.0 - pow((1.0 - G2), 2.0) * 2.0));
+
+	float skinVal = blured.a;
+	float4 res = lerp(curve, oral, G2);
+	res = float4(lerp(oral.rgb, res.rgb, skinVal), 1.0);
+
+	//
+	// USM.
+	//
+	res = clamp(res + sharpness * (res - float4(blured.rgb, 1.0)), 0.0, 1.0);
+
+	//
+	// Contrast light enhance.
+	//
+	float3 contrast_adjusted = max(float3(0.0, 0.0, 0.0), (res.rgb - 0.031372) * 1.0324);
+	float3 ones = float3(1.0, 1.0, 1.0);
+	float3 zeros = float3(0.0, 0.0, 0.0);
+	float w = whiteness < 0.0 ? 1.0 - skinVal : skinVal;
+	float3 screen_weight_multiplier = float3(0.45, 0.39, 0.39) * (whiteness * w);
+	float3 source_multiplier = float3(8.0, 8.0, 8.0) * contrast_adjusted;
+	float3 screen_weight = (ones - max(ones - source_multiplier, zeros)) * screen_weight_multiplier;
+	float3 minus_src = ones - contrast_adjusted;
+	float3 minus_src_square = minus_src * minus_src;
+	res = float4(lerp(res.rgb, ones - minus_src_square, screen_weight), 1.0);
+	// return float4(blured.a, blured.a,blured.a, 1.0);
+	return res;
+}
+
+// Thin, ColorMatrix, ColorLevel Filter.
+//
+float thinX;
+float thinY;
+
+VS_OUTPUT vs_thin( VS_INPUT vert )
+{
+	VS_OUTPUT vsout = (VS_OUTPUT)0;
+	vsout.pos = float4(vert.pos.x * thinX, vert.pos.y * thinY, vert.pos.z, vert.pos.w);
+	vsout.uv = vert.uv;
+	return vsout;
+}
+
+float4 ps_more( float2 texCoord : TEXCOORD0 ) : COLOR0
+{
+	float4 color = float4(tex2D(sourceSampler0, texCoord).rgb, 1.0);
+	return color;
+}
+
+technique vpProcess
+{
+	pass beauty0
+	{
+		VertexShader =  compile vs_3_0 vs_quad();
+		PixelShader  =  compile ps_3_0 ps_beauty0();
+		ZEnable = false;
+	}
+	
+	pass beauty1
+	{
+		VertexShader = compile vs_3_0 vs_quad();
+		PixelShader = compile ps_3_0 ps_beauty1();
+		ZEnable = false;
+	}
+	
+	pass beauty2
+	{
+		VertexShader = compile vs_3_0 vs_quad();
+		PixelShader = compile ps_3_0 ps_beauty2();
+		ZEnable = false;
+	}
+	
+	pass thin_filter
+	{
+		VertexShader = compile vs_3_0 vs_thin();
+		PixelShader = compile ps_3_0 ps_more();
+		ZEnable = false;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
